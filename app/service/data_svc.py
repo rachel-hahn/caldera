@@ -49,6 +49,7 @@ class DataService(BaseService):
 
         :return:
         """
+        await self._prune_non_critical_data()
         await self.get_service('file_svc').save_file('object_store', pickle.dumps(self.ram), 'data')
 
     async def restore_state(self):
@@ -64,7 +65,7 @@ class DataService(BaseService):
                 self.ram[key] = []
                 for c_object in ram[key]:
                     await self.store(c_object)
-            self.log.debug('Restored objects from persistent storage')
+            self.log.debug('Restored data from persistent storage')
         self.log.debug('There are %s jobs in the scheduler' % len(self.ram['schedules']))
 
     async def apply(self, collection):
@@ -79,21 +80,20 @@ class DataService(BaseService):
 
     async def load_data(self):
         """
-        Read all the data sources to populate the object store
+        Non-blocking read all the data sources to populate the object store
 
         :return: None
         """
-        async def load():
-            try:
-                for plug in [p for p in await self.locate('plugins') if p.data_dir]:
-                    await self._load_abilities(plug)
-                    await self._load_adversaries(plug)
-                    await self._load_sources(plug)
-                    await self._load_planners(plug)
-            except Exception as e:
-                self.log.debug(repr(e), exc_info=True)
         loop = asyncio.get_event_loop()
-        loop.create_task(load())
+        loop.create_task(self._load())
+
+    async def reload_data(self):
+        """
+        Blocking read all the data sources to populate the object store
+
+        :return: None
+        """
+        await self._load()
 
     async def store(self, c_object):
         """
@@ -168,11 +168,21 @@ class DataService(BaseService):
                         phases.insert(last_phase + 1, [phases[phase_id][idx]])
                         del phases[phase_id][idx + 1:]
             phase_id += 1
-
         return dict(pp)
 
+    async def _load(self):
+        try:
+            for plug in [p for p in await self.locate('plugins') if p.data_dir]:
+                await self._load_abilities(plug)
+            for plug in [p for p in await self.locate('plugins') if p.data_dir]:
+                await self._load_adversaries(plug)
+                await self._load_sources(plug)
+                await self._load_planners(plug)
+        except Exception as e:
+            self.log.debug(repr(e))
+
     async def _load_adversaries(self, plugin):
-        for filename in glob.iglob('%s/adversaries/*.yml' % plugin.data_dir, recursive=True):
+        for filename in glob.iglob('%s/adversaries/**/*.yml' % plugin.data_dir, recursive=True):
             for adv in self.strip_yml(filename):
                 phases = adv.get('phases', dict())
                 for p in adv.get('packs', []):
@@ -296,3 +306,7 @@ class DataService(BaseService):
                           privilege=privilege, timeout=timeout)
         ability.access = access
         return await self.store(ability)
+
+    async def _prune_non_critical_data(self):
+        self.ram.pop('plugins')
+        self.ram.pop('obfuscators')
