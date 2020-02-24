@@ -1,3 +1,4 @@
+[![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fmitre%2Fcaldera%2Freleases%2Flatest)](https://github.com/mitre/caldera/releases/latest)
 [![Build Status](https://travis-ci.com/mitre/caldera.svg?branch=master)](https://travis-ci.com/mitre/caldera)
 [![Documentation Status](https://readthedocs.org/projects/caldera/badge/?version=stable)](http://caldera.readthedocs.io/?badge=stable)
 
@@ -31,17 +32,15 @@ These requirements are for the computer running the core framework:
 
 ## Installation
 
-Start by cloning this repository recursively, passing the desired version/release in x.x.x format. The latest release is 2.6.0. This will pull in all available plugins.
+Start by cloning this repository recursively, passing the desired version/release in x.x.x format. This will pull in all available plugins.
 ```
 git clone https://github.com/mitre/caldera.git --recursive --branch x.x.x 
 ```
 
-Next install the PIP requirements
+Next run the install.sh script. Replace "ubuntu" with your operating-system. See the i[nstall docs](https://caldera.readthedocs.io/en/latest/Install-script.html) for supported operating-systems.
 ```
-pip install -r requirements.txt
+./install.sh --ubuntu
 ```
-> Instead of running the step above, you could run the [auto-installer.sh](https://caldera.readthedocs.io/en/latest/Auto-install-script.html) 
-script to automatically configure CALDERA in our recommended way. 
 
 Finally, start the server. 
 ```
@@ -66,14 +65,3 @@ Want to contribute to this project? We use the basic feature branch GIT flow. Fo
 In addition to CALDERA's open source capabilities, MITRE maintains several in-house CALDERA plugins that offer 
 more advanced functionality. For more information, or to discuss licensing opportunities, please reach out to 
 caldera@mitre.org or directly to [MITRE's Technology Transfer Office](https://www.mitre.org/about/corporate-overview/contact-us#technologycontact).
-
-## Related MITRE Work
-
-[BRAWL Game](https://github.com/mitre/brawl-public-game-001) - Data set created by the BRAWL project representing
-one CALDERA operation with data collected by Microsoft Sysmon and other sensors.
-
-[CASCADE](https://github.com/mitre/cascade-server) - Prototype blue team analysis tool to automate investigative work.
-
-## Acknowledgements
-
-[Atomic Red Team](https://github.com/redcanaryco/atomic-red-team)
