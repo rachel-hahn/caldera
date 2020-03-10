@@ -13,7 +13,7 @@ class BasePlanningService(BaseService):
     re_variable = re.compile(r'#{(.*?)}', flags=re.DOTALL)
     re_limited = re.compile(r'#{.*\[*\]}')
     re_trait = re.compile(r'(?<=\{).+?(?=\[)')
-    re_count = re.compile(r'(?<=\[).+?(?=\])')
+    re_index = re.compile(r'(?<=\[filters\().+?(?=\)\])')
 
     async def trim_links(self, operation, links, agent):
         """
@@ -77,9 +77,10 @@ class BasePlanningService(BaseService):
         :param agent:
         :return: updated list of links
         """
-        completed_links = [l.command for l in operation.chain
+        completed_links = [(l.command_hash if l.command_hash else l.command) for l in operation.chain
                            if l.paw == agent.paw and (l.finish or l.can_ignore())]
-        return [l for l in links if l.ability.repeatable or l.command not in completed_links]
+        return [l for l in links if l.ability.repeatable or
+                (l.command_hash if l.command_hash else l.command) not in completed_links]
 
     @staticmethod
     async def remove_links_missing_facts(links):
@@ -158,11 +159,21 @@ class BasePlanningService(BaseService):
     async def _trim_by_limit(self, decoded_test, facts):
         limited_facts = []
         for limit in re.findall(self.re_limited, decoded_test):
+            limited = copy.deepcopy(facts[0])
             trait = re.search(self.re_trait, limit).group(0)
-            count = int(re.search(self.re_count, limit).group(0)) + 1
-            limited = sorted([f for f in copy.deepcopy(facts[0]) if f.trait == trait], key=lambda k: (-k.score))[:count]
-            if limited:
-                limited_facts.append(limited)
+
+            limit_definitions = re.search(self.re_index, limit).group(0)
+            if limit_definitions:
+                for limiter in limit_definitions.split(','):
+                    limited = self._apply_limiter(trait=trait, limiter=limiter.split('='), facts=limited)
+            limited_facts.append(limited)
         if limited_facts:
             return limited_facts
         return facts
+
+    @staticmethod
+    def _apply_limiter(trait, limiter, facts):
+        if limiter[0] == 'max':
+            return sorted([f for f in facts if f.trait == trait], key=lambda k: (-k.score))[:int(limiter[1])]
+        if limiter[0] == 'technique':
+            return [f for f in facts if f.technique_id == limiter[1]]

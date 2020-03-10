@@ -295,9 +295,9 @@
             identifier = uuidv4();
         }
         let name = $('#profile-goal').val();
-        if(!name){ alert('Please enter a profile name!'); return; }
+        if(!name){ warn('Please enter a profile name!'); return; }
         let description = $('#profile-description').val();
-        if(!description){ alert('Please enter a description!'); return; }
+        if(!description){ warn('Please enter a description!'); return; }
 
         let abilities = [];
         $('#profile-tests li').each(function() {
@@ -314,9 +314,9 @@
 
     function saveAbility() {
         let name = $('#ability-name').val();
-        if(!name){ alert('Please enter an ability name!'); return; }
+        if(!name){ warn('Please enter an ability name!'); return; }
         let description = $('#ability-description').val();
-        if(!description){ alert('Please enter a description!'); return; }
+        if(!description){ warn('Please enter a description!'); return; }
 
         let data = {};
         let platforms = {};
@@ -505,7 +505,7 @@
             } else if (p === 'linux') {
                 icon = $('<div class="tooltip"><span class="tooltiptext">Works on Linux ('+ exec +')</span><img src="/gui/img/linux.png"/></div>');
             } else {
-                icon = $('<div class="tooltip"><span class="tooltiptext">Works on MacOS ('+ exec +')</span><img src="/gui/img/macos.png"/></div>');
+                icon = $('<div class="tooltip"><span class="tooltiptext">Works on MacOS ('+ exec +')</span><img src="/gui/img/darwin.png"/></div>');
             }
             icon.appendTo(template.find('#icon-row'));
         });

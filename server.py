@@ -56,6 +56,7 @@ def run_tasks(services):
     loop.create_task(app_svc.start_sniffer_untrusted_agents())
     loop.create_task(app_svc.resume_operations())
     loop.create_task(app_svc.run_scheduler())
+    loop.create_task(learning_svc.build_model())
     loop.run_until_complete(start_server())
     try:
         logging.info('All systems ready.')
@@ -74,10 +75,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = args.environment if pathlib.Path('conf/%s.yml' % args.environment).exists() else 'default'
     with open('conf/%s.yml' % config) as c:
-        BaseWorld.apply_config(yaml.load(c, Loader=yaml.FullLoader))
+        BaseWorld.apply_config('default', yaml.load(c, Loader=yaml.FullLoader))
+        BaseWorld.apply_config('agents', BaseWorld.strip_yml('conf/agents.yml')[0])
 
         data_svc = DataService()
-        contact_svc = ContactService(BaseWorld.strip_yml('conf/agents.yml')[0]['agent_config'])
+        contact_svc = ContactService()
         planning_svc = PlanningService()
         rest_svc = RestService()
         auth_svc = AuthService()

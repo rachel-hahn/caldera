@@ -147,8 +147,13 @@ $(document).ready(function () {
 window.onerror = function(error, url, line) {
     let msg = 'Check your JavaScript console. '+error;
     if(msg.includes('TypeError')) {
-        stream('Refresh your GUI', true);
+        stream('Refresh your GUI');
     } else {
-        stream(msg, true);
+        stream(msg);
     }
 };
+
+function warn(msg){
+    document.getElementById("alert-modal").style.display="block";
+    $("#alert-text").html(msg);
+}
